@@ -1,0 +1,2 @@
+# required for executing gradlew script in linux with conflicting end of lines breaking stuffs
+gradlew text eol=lf
