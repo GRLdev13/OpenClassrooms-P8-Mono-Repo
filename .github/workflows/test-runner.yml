@@ -6,6 +6,8 @@ on:
 
 permissions:
   contents: read
+  actions: read
+  checks: write
 
 jobs:
   backend-tests:
@@ -35,7 +37,23 @@ jobs:
         run: chmod +x Back/gradlew
 
       - name: Run backend tests
+        id: backend-test-run
+        continue-on-error: true
         run: python Back/run-tests.py
+
+      - name: Publish backend test report
+        if: ${{ !cancelled() }}
+        uses: dorny/test-reporter@v3
+        with:
+          name: Backend test results
+          path: Back/test-results/*.xml
+          reporter: java-junit
+          use-actions-summary: "true"
+          report-title: Backend test results
+          list-suites: all
+          list-tests: all
+          fail-on-empty: "true"
+          fail-on-error: "true"
 
       - name: Upload backend test results
         if: ${{ always() && hashFiles('Back/test-results/*.xml') != '' }}
@@ -43,6 +61,10 @@ jobs:
         with:
           name: backend-test-results
           path: Back/test-results/*.xml
+
+      - name: Preserve backend test failure
+        if: ${{ always() && steps.backend-test-run.outcome == 'failure' }}
+        run: exit 1
 
   frontend-tests:
     name: Frontend (Angular)
@@ -69,7 +91,23 @@ jobs:
         working-directory: Front
 
       - name: Run frontend tests
+        id: frontend-test-run
+        continue-on-error: true
         run: python Front/run-tests.py
+
+      - name: Publish frontend test report
+        if: ${{ !cancelled() }}
+        uses: dorny/test-reporter@v3
+        with:
+          name: Frontend test results
+          path: Front/test-results/*.xml
+          reporter: java-junit
+          use-actions-summary: "true"
+          report-title: Frontend test results
+          list-suites: all
+          list-tests: all
+          fail-on-empty: "true"
+          fail-on-error: "true"
 
       - name: Upload frontend test results
         if: ${{ always() && hashFiles('Front/test-results/*.xml') != '' }}
@@ -77,3 +115,7 @@ jobs:
         with:
           name: frontend-test-results
           path: Front/test-results/*.xml
+
+      - name: Preserve frontend test failure
+        if: ${{ always() && steps.frontend-test-run.outcome == 'failure' }}
+        run: exit 1
