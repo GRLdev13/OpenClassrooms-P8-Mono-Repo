@@ -1,0 +1,79 @@
+name: Project tests
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  backend-tests:
+    name: Backend (Java / Gradle)
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Set up Java
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: "17"
+          cache: gradle
+          cache-dependency-path: |
+            Back/*.gradle
+            Back/gradle/wrapper/gradle-wrapper.properties
+
+      - name: Make Gradle wrapper executable
+        run: chmod +x Back/gradlew
+
+      - name: Run backend tests
+        run: python Back/run-tests.py
+
+      - name: Upload backend test results
+        if: ${{ always() && hashFiles('Back/test-results/*.xml') != '' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: backend-test-results
+          path: Back/test-results/*.xml
+
+  frontend-tests:
+    name: Frontend (Angular)
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: Front/package-lock.json
+
+      - name: Install frontend dependencies
+        run: npm ci
+        working-directory: Front
+
+      - name: Run frontend tests
+        run: python Front/run-tests.py
+
+      - name: Upload frontend test results
+        if: ${{ always() && hashFiles('Front/test-results/*.xml') != '' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-test-results
+          path: Front/test-results/*.xml
