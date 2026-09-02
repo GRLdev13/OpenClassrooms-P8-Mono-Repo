@@ -31,8 +31,8 @@ FROM dhi.io/nginx:1.28.0-alpine3.21-dev AS runner
 # Copy custom Nginx config
 COPY ./nginx/nginx.conf /etc/nginx/nginx.conf
 
-# Copy the static build output from the build stage to Nginx's default HTML serving directory
-COPY --chown=nginx:nginx --from=builder /app/dist/*/browser /usr/share/nginx/html
+# Copy the static build output to the document root configured in nginx.conf
+COPY --chown=nginx:nginx --from=builder /app/dist/*/browser /app
 
 # Use a non-root user for security best practices
 USER nginx
