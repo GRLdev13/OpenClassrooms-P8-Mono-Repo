@@ -40,3 +40,6 @@ out/
 ### OpenAPI Generator ###
 .openapi-generator/
 java-generated/
+
+# Local PostgreSQL backups may contain sensitive application data.
+backups/*.dump
