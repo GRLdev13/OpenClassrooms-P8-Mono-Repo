@@ -1,5 +1,5 @@
 name: Publish Docker images
-
+# Runs after "Project test workflow is finished"
 on:
   workflow_run:
     workflows:
